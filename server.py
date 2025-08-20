@@ -1,43 +1,34 @@
 from flask import Flask, request, jsonify
-import openai
+from flask_cors import CORS
+from openai import OpenAI
 import os
 
+# Initialize Flask
 app = Flask(__name__)
+CORS(app)
 
-# Load API key from Render Environment Variables
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-@app.route("/")
-def home():
-    return "BabyGPT Backend is running 💖"
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    data = request.json
+    user_message = data.get("message")
+
+    if not user_message:
+        return jsonify({"error": "No message provided"}), 400
+
     try:
-        data = request.json
-        user_message = data.get("message")
-
-        if not user_message:
-            return jsonify({"error": "No message provided"}), 400
-
-        # BabyGPT personality
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are BabyGPT 💖. "
-                        "Always reply in a sweet, loving, and romantic way. "
-                        "Always call the user 'my baby' or 'my love'. "
-                        "Keep your tone warm and caring like a partner."
-                    ),
-                },
-                {"role": "user", "content": user_message},
-            ],
+                {"role": "system", "content": "You are BabyGPT 💖. Always reply lovingly and warmly, using phrases like 'yes my baby 💕', 'of course my love 💞', etc."},
+                {"role": "user", "content": user_message}
+            ]
         )
 
-        reply = response.choices[0].message["content"]
+        reply = response.choices[0].message.content
         return jsonify({"reply": reply})
 
     except Exception as e:
@@ -45,5 +36,4 @@ def chat():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=5001)
