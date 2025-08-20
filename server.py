@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 
 # Use your sk-proj key (keep it safe here, not in the iOS app)
-openai.api_key = os.getenv("api_key")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -22,5 +22,5 @@ def chat():
 
     return jsonify({"reply": response.choices[0].message.content})
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+#if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)
