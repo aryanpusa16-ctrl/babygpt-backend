@@ -4,33 +4,46 @@ import os
 
 app = Flask(__name__)
 
-# Load API key from Render environment variables
+# Load API key from Render Environment Variables
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# ✅ Root route
 @app.route("/")
 def home():
-    return "Backend is working ✅"
+    return "BabyGPT Backend is running 💖"
 
-# ✅ Chat route
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.json
-    user_prompt = data.get("prompt", "")
-
     try:
-        response = openai.chat.completions.create(
-            model="gpt-4o-mini",   # safer choice than plain "gpt-4"
+        data = request.json
+        user_message = data.get("message")
+
+        if not user_message:
+            return jsonify({"error": "No message provided"}), 400
+
+        # BabyGPT personality
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are BabyGPT, a cute loving AI."},
-                {"role": "user", "content": user_prompt}
-            ]
+                {
+                    "role": "system",
+                    "content": (
+                        "You are BabyGPT 💖. "
+                        "Always reply in a sweet, loving, and romantic way. "
+                        "Always call the user 'my baby' or 'my love'. "
+                        "Keep your tone warm and caring like a partner."
+                    ),
+                },
+                {"role": "user", "content": user_message},
+            ],
         )
 
-        return jsonify({"reply": response.choices[0].message.content})
+        reply = response.choices[0].message["content"]
+        return jsonify({"reply": reply})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host="0.0.0.0", port=port)
