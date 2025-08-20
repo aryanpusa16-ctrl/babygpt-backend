@@ -1,5 +1,3 @@
-flask==3.1.2
-gunicorn
+flask
 openai
-requests
-python-dotenv
+gunicorn
